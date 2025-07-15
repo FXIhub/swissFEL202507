@@ -1,0 +1,5 @@
+# run table generated from another script
+run number, hits, duration (s)
+1, 100, 120
+2, 23, 43.2
+3, 234, 63
