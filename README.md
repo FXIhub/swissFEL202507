@@ -1,2 +1,45 @@
 # swissFEL202507
 Convergent Beam Diffraction cystallography experiment at the Bernina beamline with the Junfrau detector
+
+Beamtime directory: `/sf/bernina/exp/25g_chapman`
+
+## Links
+- [SwissFEL Google doc](https://docs.google.com/document/d/1mA43zji2rCJHscgj-RfL8fwlKnjQ1flEnQeekHcOKoM/)
+- [XWiki page](https://xwiki.desy.de/xwiki/bin/view/MLL/SwissFEL_July_2025)
+- [Mattermost link](https://chat.desy.de/desy/channels/swissfel-202507)
+- [SciLog](https://scilog.psi.ch/logbooks/677f5e86ff60c08c7abab0d2/dashboard)
+
+## External SSH access
+SSH works for me! Here is my process. 
+
+You can just do **terminal 1** and **terminal 2** steps if you don't care about having non-password ssh connections after establishing the first ssh connection.
+
+### SSH
+```bash
+$ cat .ssh/config
+Host *.psi.ch
+        ControlMaster auto
+        ControlPath ~/.ssh/controlmasters/%r@%h:%p
+        ControlPersist yes
+$ mkdir ~/.ssh/controlmasters
+```
+
+**terminal 1**: 
+ - `$ ssh ext-morgan_a@hopx.psi.ch` 
+ - enter password
+ - enter mfa
+ - leave terminal running
+
+**terminal 2**:
+ - `$ ssh -J ext-morgan_a@hopx.psi.ch ext-morgan_a@ra.psi.ch`
+ - enter password
+ - leave terminal running
+
+you now have access to ra cluster
+
+**terminal 3**:
+- `$ ssh ext-morgan_a@ra.psi.ch`
+
+You now have access to ra without entering a password or MFA.
+
+There is probably a way to configure ssh to make this easier.
