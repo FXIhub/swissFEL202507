@@ -3,6 +3,13 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# swap files (vi)
+*.swp
+
+# credentials files for google
+credentials.json
+token.json
+
 # C extensions
 *.so
 
