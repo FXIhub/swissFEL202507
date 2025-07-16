@@ -26,7 +26,11 @@ class Duration():
 
                 if fnam.is_file():
                     with open(fnam, 'r') as json_file:
-                        d = json.load(json_file)
+                        try:
+                            d = json.load(json_file)
+                        except:
+                            break
+
                         row['scan_json'] = d
                         # list of start, stop ids
                         pids = np.array(d['pulseIds'])
@@ -39,11 +43,15 @@ class Duration():
 
                 if fnam.is_file():
                     with open(fnam, 'r') as json_file:
-                        d = json.load(json_file)
-                        row['scan_info_rel'] = d
+                        try:
+                            d = json.load(json_file)
+                            row['scan_info_rel'] = d
+                        except:
+                            pass
 
                 else:
                     err = f'could not find scan file {fnam}'
-                    raise ValueError(err) 
+                    print(err)
+                    # raise ValueError(err) 
 
 

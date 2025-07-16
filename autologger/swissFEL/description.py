@@ -16,6 +16,8 @@ class Description():
                 ):
 
                 cmd = row['swiss_row']['metadata.scan_command']
+                cmd = cmd.replace("'", '"')
+                print(f'{cmd=}')
                 cmd = cmd.split('"')
                 i = np.where(['description' in c for c in cmd])[0][0]+1
                 desc = cmd[i]
