@@ -3,6 +3,43 @@ Convergent Beam Diffraction cystallography experiment at the Bernina beamline wi
 
 Beamtime directory: `/sf/bernina/exp/25g_chapman`
 
+## analysis scripts
+
+SSH to ra (see SSH below)
+
+### calculate whitefield
+```
+$ cd /sf/bernina/exp/25g_chapman/work/git/swissFEL202507/slurm
+$ sbatch submit_whitefield.sh <run_number>
+```
+This outputs:
+```
+$ h5ls -r /sf/bernina/exp/25g_chapman/work/whitefield/whitefield_run<run_number>.h5 
+/                        Group
+/std                     Dataset {16448, 1030}
+/whitefield              Dataset {16448, 1030}
+```
+which is required by the streak finder.
+
+## calculate streaks
+```
+$ cd /sf/bernina/exp/25g_chapman/work/git/swissFEL202507/slurm
+$ sbatch submit_streakfinder.sh <run_number>
+```
+if you wish to change the peak finding parameters edit the file: 
+	`/sf/bernina/exp/25g_chapman/work/git/swissFEL202507/slurm/streak_finder_params.json`
+
+this outputs a list of streaks to:
+```
+$ h5ls -r /sf/bernina/exp/25g_chapman/work/streaks/streaks_run<run_number>.h5
+/                        Group
+/counts                  Dataset {29601}
+/file_index              Dataset {50}
+/file_name               Dataset {50}
+/pulse_id                Dataset {50, 1}
+/streaks                 Dataset {29601, 4}
+```
+
 ## Links
 - [SwissFEL Google doc](https://docs.google.com/document/d/1mA43zji2rCJHscgj-RfL8fwlKnjQ1flEnQeekHcOKoM/)
 - [XWiki page](https://xwiki.desy.de/xwiki/bin/view/MLL/SwissFEL_July_2025)
