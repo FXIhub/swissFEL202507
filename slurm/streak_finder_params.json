@@ -1,0 +1,31 @@
+{
+    "parameters": {
+        "center": null,
+        "num_threads": 1,
+        "scale_whitefield": false
+    },
+    "peaks": {
+        "npts": 50,
+        "structure": {
+            "radius": 2,
+            "rank": 2
+        },
+        "vmin": 5.0
+    },
+    "roi": {
+        "xmax": 0,
+        "xmin": 0,
+        "ymax": 0,
+        "ymin": 0
+    },
+    "streaks": {
+        "min_size": 25,
+        "nfa": 1,
+        "structure": {
+            "radius": 5,
+            "rank": 4
+        },
+        "vmin": 5.0,
+        "xtol": 1.8
+    }
+}

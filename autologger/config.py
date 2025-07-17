@@ -29,6 +29,7 @@ columns = [
     swissFEL.Pulses(info, 'Pulses (total/read/dead)'),
     swissFEL.Transmission(info, 'Transmission'),
     swissFEL.Steps(info, 'Steps'),
+    swissFEL.Num_streaks(info, 'Num streaks'),
     swissFEL.Scan_command(info, 'Command'),
     # 'Start Time': swissFEL.Start_time(info),
     # 'Run Type': swissFEL.Run_type(info),

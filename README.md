@@ -21,7 +21,7 @@ $ h5ls -r /sf/bernina/exp/25g_chapman/work/whitefield/whitefield_run<run_number>
 ```
 which is required by the streak finder.
 
-## calculate streaks
+### calculate streaks
 ```
 $ cd /sf/bernina/exp/25g_chapman/work/git/swissFEL202507/slurm
 $ sbatch submit_streakfinder.sh <run_number>
@@ -33,12 +33,17 @@ this outputs a list of streaks to:
 ```
 $ h5ls -r /sf/bernina/exp/25g_chapman/work/streaks/streaks_run<run_number>.h5
 /                        Group
-/counts                  Dataset {29601}
-/file_index              Dataset {50}
-/file_name               Dataset {50}
-/pulse_id                Dataset {50, 1}
-/streaks                 Dataset {29601, 4}
+/counts                  Dataset {737404}
+/file_index              Dataset {26573}
+/file_name               Dataset {737404}
+/fs0_ss0_fs1_ss1_im      Dataset {737404, 4}
+/pulse_id                Dataset {26573, 1}
+/ss0_fs0_ss1_fs1_slab    Dataset {737404, 4}
 ```
+
+### plot powder
+load jupyter notebook from `/sf/bernina/exp/25g_chapman/work/git/swissFEL202507/analysis/plot_powder.ipynb`
+
 
 ## Links
 - [SwissFEL Google doc](https://docs.google.com/document/d/1mA43zji2rCJHscgj-RfL8fwlKnjQ1flEnQeekHcOKoM/)

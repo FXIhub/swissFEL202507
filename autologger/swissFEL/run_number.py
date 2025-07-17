@@ -47,7 +47,7 @@ class Run_number():
     def get_from_swiss_table(self, rows):
         if 'swiss_run_table' in self.info:
             srun_table = self.info['swiss_run_table']
-            print(f'{srun_table=}')
+            # print(f'{srun_table=}')
             runs = srun_table.axes[0]
 
             for n in runs:

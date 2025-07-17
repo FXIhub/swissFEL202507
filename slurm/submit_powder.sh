@@ -10,7 +10,8 @@
 
 module load anaconda
 conda config --add envs_dirs /das/work/p22/p22263/venvs/
-conda activate ra-standard_py39
+# conda activate ra-standard_py39
+conda activate cbc_v2
 
 python powder.py $1
 

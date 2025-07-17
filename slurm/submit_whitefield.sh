@@ -13,6 +13,3 @@ conda config --add envs_dirs /das/work/p22/p22263/venvs/
 conda activate cbc_v2
 
 python whitefield.py $1
-
-
-

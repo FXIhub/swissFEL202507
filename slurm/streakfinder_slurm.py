@@ -8,6 +8,8 @@ from pathlib import Path
 import sys
 from tqdm import tqdm
 import json
+import matplotlib.pyplot as plt
+import multiprocessing as mp
 
 import constants
 
@@ -44,6 +46,13 @@ def get_args():
     )
 
     parser.add_argument(
+        '--file_index',
+        type=int,
+        default=1,
+        help="process the file_index'th in run directory (counting from 1)"
+    )
+
+    parser.add_argument(
         '--output_dir',
         type=Path,
         default=f'{constants.work}/streaks',
@@ -53,6 +62,93 @@ def get_args():
     args = parser.parse_args()
     return args
 
+
+class Streaks():
+
+    def __init__(self, fnam, mask, whitefield, pid, params, nproc=40):
+        self.mask = mask
+        self.whitefield = whitefield
+        self.pid = pid
+        self.params = params
+        self.nproc = nproc
+
+        # get number of frames to process
+        with h5py.File(fnam) as f:
+            data = f['/data/JF07T32V02/data']
+            self.D = data.shape[0]
+
+        # get indices for each process to process
+        self.frame_inds = np.linspace(0, self.D, nproc+1).astype(int)
+        print(f'indices to process: {self.frame_inds}')
+
+    def run(self):
+        pool = mp.Pool(self.nproc)
+
+        result_iter = pool.imap_unordered(
+                self.run_worker, range(self.nproc)
+                )
+
+        lines = []
+        pids = []
+        inds = []
+        counts = []
+        for lines_n, pids_n, inds_n, counts_n in result_iter:
+            lines += lines_n
+            pids += pids_n
+            inds += inds_n
+            counts += counts_n
+
+        lines = np.concatenate(lines, axis=0)
+        counts = np.concatenate(counts, axis=0)
+        return lines, np.array(pids), np.array(inds), counts
+
+    def run_worker(self, n):
+        # only show progress for the last process
+        # if d == (self.D-1):
+        #     disable = False
+        # else:
+        #     disable = True
+
+        params = self.params
+        mask = self.mask
+        whitefield = self.whitefield
+
+        lines = []
+        pids = []
+        inds = []
+        counts = []
+
+        with h5py.File(fnam) as f:
+            data = f['/data/JF07T32V02/data']
+            for d in range(self.frame_inds[n], self.frame_inds[n+1]):
+                print(f'processing frame {d}')
+                sys.stdout.flush()
+
+                # out = np.sum(data[d])
+                frame = data[d]
+                # scale whitefield
+                c = np.sum(mask * whitefield * frame) / np.sum(mask * whitefield**2)
+                frame = np.clip((frame - c * whitefield) / whitefield**0.5, 0, None)
+
+                det_obj = sf.streak_finder.PatternStreakFinder(data=frame, mask=mask, structure=params.streaks.structure.to_structure('2d'),
+                                                               min_size=params.streaks.min_size, nfa=params.streaks.nfa)
+
+                peaks = det_obj.detect_peaks(vmin=params.peaks.vmin, npts=params.peaks.npts, connectivity=params.peaks.structure.to_structure('2d'),
+                                             num_threads=1)
+
+                streaks = det_obj.detect_streaks(peaks, xtol=params.streaks.xtol, vmin=params.streaks.vmin, num_threads=1)
+
+                t = streaks[0].to_lines() # (num_streaks, 4) numpy array
+
+                regions = streaks[0].to_regions()
+
+                if t.shape[0] > 0:
+                    lines.append(t)
+                    pids.append(pid[d])
+                    inds.append(d)
+                    counts.append(sf.label.total_mass(regions, frame)) # (num_streaks,) numpy array
+
+        return lines, pids, inds, counts
 
 if __name__ == '__main__':
     args = get_args()
@@ -67,7 +163,7 @@ if __name__ == '__main__':
     assert(run_dir.is_dir())
 
     # get file list
-    fnams = list(run_dir.glob('acq*.JF07T32V02.h5'))
+    fnams = sorted(list(run_dir.glob('acq*.JF07T32V02.h5')))
 
     print(f'found {len(fnams)} Junfrau files in run directory: {run_dir}', file=sys.stderr)
 
@@ -78,74 +174,27 @@ if __name__ == '__main__':
     with h5py.File(whitefield_fnam) as f:
         whitefield = f['whitefield'][()]
 
-    lines = []
-    pids = []
-    fnams_out = []
-    inds = []
-    counts = []
-    frames = 0
-    for fnam in tqdm(fnams):
-        with h5py.File(fnam) as f:
-            data = f['/data/JF07T32V02/data']
-            pid = f['/data/JF07T32V02/pulse_id']
-            mask = f['/data/JF07T32V02/meta/pixel_mask'][()]
-            mask = mask.astype(bool)
-            # whitefield = np.zeros(data.shape[1:], dtype=float)
+    whitefield[whitefield == 0] = 1
 
-            params = sf.scripts.StreakFinderParameters.read(args.params_file, 'json')
+    fnam = fnams[args.file_index-1]
 
+    with h5py.File(fnam) as f:
+        pid = f['/data/JF07T32V02/pulse_id'][()]
+        mask = f['/data/JF07T32V02/meta/pixel_mask'][()]
+        mask = mask.astype(bool)
 
-            for d in tqdm(range(data.shape[0]), desc=f'processing {fnam}', leave=False):
-                frame = np.clip(data[d] - whitefield, 0, None)
+    params = sf.scripts.StreakFinderParameters.read(args.params_file, 'json')
+    streaks = Streaks(fnam, mask, whitefield, pid, params)
 
-                det_obj = sf.streak_finder.PatternStreakFinder(data=frame, mask=mask, structure=params.streaks.structure.to_structure('2d'),
-                                                               min_size=params.streaks.min_size, nfa=params.streaks.nfa)
+    lines, pids, inds, counts = streaks.run()
 
-                peaks = det_obj.detect_peaks(vmin=params.peaks.vmin, npts=params.peaks.npts, connectivity=params.peaks.structure.to_structure('2d'),
-                                             num_threads=1)
+    fnam_out = args.output_dir / f'streaks_run{args.run:>04}_file{args.file_index:>04}.h5'
+    print(f'outputing streak information to: {fnam_out}')
 
-                streaks = det_obj.detect_streaks(peaks, xtol=params.streaks.xtol, vmin=params.streaks.vmin, num_threads=1)
-                t = streaks[0].to_lines() # (num_streaks, 4) numpy array
-
-                regions = streaks[0].to_regions()
-
-                frames += 1
-                if t.shape[0] > 0:
-                    lines.append(t)
-                    pids.append(pid[d])
-                    inds.append(d)
-                    fnams_out.append(fnam)
-                    counts.append(sf.label.total_mass(regions, frame)) # (num_streaks,) numpy array
-
-                if frames == args.maxframes:
-                    break
-
-        if frames == args.maxframes:
-            break
-
-    print(lines)
-
-    lines = np.concatenate(lines, axis=0)
-    counts = np.concatenate(counts, axis=0)
-
-    fnam = args.output_dir / f'streaks_run{args.run:>04}.h5'
-    print(f'outputing streak information to: {fnam}')
-    with h5py.File(fnam, 'w') as f:
+    with h5py.File(fnam_out, 'w') as f:
         f['streaks'] = lines
         f['counts'] = counts
         f['pulse_id'] = np.array(pids)
         f['file_index'] = np.array(inds)
-        f['file_name'] = np.array(fnams_out, dtype='S')
-
-
-"""
-import matplotlib.pyplot as plt
-fig, ax = plt.subplots()
-
-ax.imshow(data)
-# for line in streaks[0].to_lines():
-#     ax.plot(line[::2], line[1::2])
-
-plt.show()
-"""
+        f['file_name'] = np.array(fnam_out, dtype='S')
 
