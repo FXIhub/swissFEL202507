@@ -74,7 +74,7 @@ if __name__ == '__main__':
             file_name += t
 
         # remove file
-        # fnam.unlink()
+        fnam.unlink()
 
     with h5py.File(fnam_out, 'w') as f:
         f['fs0_ss0_fs1_ss1_slab'] = np.concatenate(lines, axis=0)

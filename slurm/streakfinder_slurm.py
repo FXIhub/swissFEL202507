@@ -53,6 +53,20 @@ def get_args():
     )
 
     parser.add_argument(
+        '--mask_file',
+        type=Path,
+        default=Path(f'{constants.work}/mask/mask_hist_man_dil_am.h5'),
+        help="mask file (h5) in slab format (16448, 1030)"
+    )
+
+    parser.add_argument(
+        '--mask_file_path',
+        type=str,
+        default='data/data',
+        help="path to mask data in mask file."
+    )
+
+    parser.add_argument(
         '--output_dir',
         type=Path,
         default=f'{constants.work}/streaks',
@@ -183,6 +197,10 @@ if __name__ == '__main__':
         mask = f['/data/JF07T32V02/meta/pixel_mask'][()]
         mask = mask.astype(bool)
 
+    # combine with user selected mask   
+    with h5py.File(args.mask_file) as f:
+        mask *= f[args.mask_file_path][()].astype(bool)
+
     params = sf.scripts.StreakFinderParameters.read(args.params_file, 'json')
     streaks = Streaks(fnam, mask, whitefield, pid, params)
 
@@ -196,5 +214,5 @@ if __name__ == '__main__':
         f['counts'] = counts
         f['pulse_id'] = np.array(pids)
         f['file_index'] = np.array(inds)
-        f['file_name'] = np.array(fnam_out, dtype='S')
+        f['file_name'] = np.array(fnam, dtype='S')
 

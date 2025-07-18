@@ -14,7 +14,9 @@ echo sbatch --parsable --array=1-${files} submit_streakfinder_single_file.sh $1
 # launch jop for each file
 ID=$(sbatch --parsable --array=1-${files} submit_streakfinder_single_file.sh $1)
 
-# launch job to merge and cleaup files
-ID2=$(sbatch --depend=afterok:${ID} --parsable submit_streakfinder_finish.sh $1)
+# sometimes the conda environment cannot be loaded on a single node!?
 
-ID2=$(sbatch --depend=afterok:${ID2} --parsable submit_add_geometry.sh $1)
+# launch job to merge and cleaup files
+ID2=$(sbatch --depend=afterany:${ID} --parsable submit_streakfinder_finish.sh $1)
+
+ID3=$(sbatch --depend=afterany:${ID2} --parsable submit_add_geometry.sh $1)

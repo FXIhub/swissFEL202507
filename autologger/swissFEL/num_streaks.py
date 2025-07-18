@@ -14,8 +14,9 @@ class Num_streaks():
             fnam = Path(self.info['experiment_directory']) / f'work/streaks/streaks_run{n:>04}.h5'
 
             if fnam.is_file():
-                with h5py.File(fnam) as f:
-                    N = f['/counts'].shape[0]
-                row[self.heading] = N
-            else:
-                print(f'could not find {fnam}')
+                try: 
+                    with h5py.File(fnam) as f:
+                        N = f['/counts'].shape[0]
+                    row[self.heading] = N
+                except:
+                    pass

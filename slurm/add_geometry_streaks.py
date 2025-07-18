@@ -40,19 +40,8 @@ def get_args():
     args = parser.parse_args()
     return args
 
-if __name__ == '__main__':
-    args = get_args()
 
-    fnam_in = args.output_dir / f'streaks_run{args.run:>04}.h5'
-    print(f'loading streak information from: {fnam_in}')
-
-    with h5py.File(fnam_in) as f:
-        streaks = f['ss0_fs0_ss1_fs1_slab'][()]
-
-    fnam = '/das/home/ext-morgan_a/beamtime/raw/run0065/data/acq0001.JF07T32V02.h5'
-    with h5py.File(fnam, 'r') as f:
-        data_shape = f['/data/JF07T32V02/data'].shape
-
+def apply_geom_streaks(streaks):
     x, y, panel_ids, panel_index_to_name, parsed_detector_dict = get_xyz.get_xy_map()
 
     N, M = x.shape
@@ -92,6 +81,19 @@ if __name__ == '__main__':
         r1 = ss1 * dy + fs1 * dx + c0
 
         streaks_xy[i] = [r0.real, r0.imag, r1.real, r1.imag]
+    return streaks_xy
+
+if __name__ == '__main__':
+    args = get_args()
+
+    fnam_in = args.output_dir / f'streaks_run{args.run:>04}.h5'
+    print(f'loading streak information from: {fnam_in}')
+
+    with h5py.File(fnam_in) as f:
+        streaks = f['fs0_ss0_fs1_ss1_slab'][()]
+
+    streaks_xy = apply_geom_streaks(streaks)
+
 
     # write to file
     key = 'fs0_ss0_fs1_ss1_im'
@@ -103,4 +105,5 @@ if __name__ == '__main__':
         f[key] = streaks_xy
 
 
+    
 
