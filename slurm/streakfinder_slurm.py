@@ -8,7 +8,6 @@ from pathlib import Path
 import sys
 from tqdm import tqdm
 import json
-import matplotlib.pyplot as plt
 import multiprocessing as mp
 
 import constants
@@ -142,7 +141,7 @@ class Streaks():
                 frame = data[d]
                 # scale whitefield
                 c = np.sum(mask * whitefield * frame) / np.sum(mask * whitefield**2)
-                frame = np.clip((frame - c * whitefield) / whitefield**0.5, 0, None)
+                frame = np.clip((frame - c * whitefield) / (c * whitefield)**0.5, 0, None)
 
                 det_obj = sf.streak_finder.PatternStreakFinder(data=frame, mask=mask, structure=params.streaks.structure.to_structure('2d'),
                                                                min_size=params.streaks.min_size, nfa=params.streaks.nfa)
@@ -156,10 +155,11 @@ class Streaks():
 
                 regions = streaks[0].to_regions()
 
-                if t.shape[0] > 0:
+                N = t.shape[0]
+                if N > 0:
                     lines.append(t)
-                    pids.append(pid[d])
-                    inds.append(d)
+                    pids += N * [pid[d]]
+                    inds += N * [d]
                     counts.append(sf.label.total_mass(regions, frame)) # (num_streaks,) numpy array
 
         return lines, pids, inds, counts

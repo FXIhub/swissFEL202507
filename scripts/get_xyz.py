@@ -120,3 +120,22 @@ def geom_cor(arr):
     out.fill(np.nan)
     out[y, x] = arr
     return out, (y0, x0)
+
+class Geom_cor():
+
+    def __init__(self, dtype):
+        x, y = get_xy_map()[:2]
+        x0, y0 = x.min(), y.min()
+        x -= x0
+        y -= y0
+        self.x = np.round(x).astype(np.uint16)
+        self.y = np.round(y).astype(np.uint16)
+        M = int(y.max() + 2)
+        N = int(x.max() + 2)
+        self.out = np.empty((M, N), dtype=dtype)
+        self.out.fill(np.nan)
+        self.centre = (y0, x0)
+
+    def get(self, arr):
+        self.out[self.y, self.x] = arr
+        return self.out

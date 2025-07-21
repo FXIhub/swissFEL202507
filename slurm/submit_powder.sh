@@ -1,17 +1,22 @@
 #!/bin/bash
 
-#SBATCH --reservation=p22263_2025-07-15
-#SBATCH --time=1000
-#SBATCH --job-name=powder
-#SBATCH --output=powder-%A-%a.out
-#SBATCH --error=powder-%A-%a.out
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=1 
+# get number of files in run
+echo argument = $1
+run=$(printf %04d $1)
+echo run = $run
+run_dir=/sf/bernina/exp/25g_chapman/raw/run${run}/data
+echo run_dir = $run_dir
+files=$(ls ${run_dir}/acq*.JF*.h5 | wc -w)
+echo found ${files} Jungfrau files in run directory ${run_dir}
+echo sbatch --parsable --array=1-${files} submit_powder_single_file.sh $1
 
-module load anaconda
-conda config --add envs_dirs /das/work/p22/p22263/venvs/
-# conda activate ra-standard_py39
-conda activate cbc_v2
+# launch jop for each file
+ID=$(sbatch --parsable --array=1-${files} submit_powder_single_file.sh $1)
 
-python powder.py $1
+# sometimes the conda environment cannot be loaded on a single node!?
+
+# launch job to merge and cleaup files
+ID2=$(sbatch --depend=afterany:${ID} --parsable submit_powder_finish.sh $1)
+
+ID3=$(sbatch --depend=afterany:${ID2} --parsable submit_add_geometry.sh $1)
 

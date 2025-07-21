@@ -9,3 +9,5 @@ from .steps import Steps
 from .scan_command import Scan_command
 from .swiss_run_table import Load_swiss_run_table
 from .num_streaks import Num_streaks
+from .num_hits import Num_hits
+from .hit_rate import Hit_rate

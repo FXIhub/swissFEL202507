@@ -6,14 +6,15 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --job-name=streakfinder
+#SBATCH --job-name=powder
 #SBATCH --open-mode=append
-#SBATCH --output=streakfinder.out
-#SBATCH --error=streakfinder.out
+#SBATCH --output=powder.out
+#SBATCH --error=powder.out
 
 module load anaconda
 conda config --add envs_dirs /das/work/p22/p22263/venvs/
 # conda activate dap-sf-new
 conda activate cbc_v2
 
-python streakfinder_finish.py $1
+python powder_finish.py $1
+

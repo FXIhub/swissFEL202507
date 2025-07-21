@@ -39,6 +39,13 @@ def get_args():
         help='output directory'
     )
 
+    parser.add_argument(
+        '--file_index',
+        type=int,
+        default=1,
+        help="process the file_index'th in run directory (counting from 1)"
+    )
+
     args = parser.parse_args()
     return args
 
@@ -56,6 +63,11 @@ if __name__ == '__main__':
 
     # get file list
     fnams = list(run_dir.glob('acq*.JF07T32V02.h5'))
+    fnam = fnams[args.file_index-1]
+    if args.file_index == 0:
+        disable = False
+    else:
+        disable = True
 
     print(f'found {len(fnams)} Junfrau files in run directory: {run_dir}', file=sys.stderr)
 
@@ -65,19 +77,19 @@ if __name__ == '__main__':
     powder = np.zeros(shape)
     counts = 0
 
-    for fnam in tqdm(fnams):
-        with h5py.File(fnam) as f:
-            data = f['/data/JF07T32V02/data']
-            # mask = f['/data/JF07T32V02/meta/pixel_mask'][()]
-            # mask = mask.astype(bool)
+    with h5py.File(fnam) as f:
+        data = f['/data/JF07T32V02/data']
+        # mask = f['/data/JF07T32V02/meta/pixel_mask'][()]
+        # mask = mask.astype(bool)
 
-            for d in tqdm(range(data.shape[0]), desc=f'processing {fnam}', leave=False):
-                powder += data[d]
-                counts += 1
+        for d in tqdm(range(data.shape[0]), desc=f'processing {fnam}', disable=disable):
+            powder += data[d]
+            counts += 1
 
-    out = args.output_dir / f'powder_run{args.run:>04}.h5'
+    fnam_out = args.output_dir / f'powder_run{args.run:>04}_file{args.file_index:>04}.h5'
+    print(f'outputing powder information to: {fnam_out}')
 
-    with h5py.File(out, 'w') as f:
+    with h5py.File(fnam_out, 'w') as f:
         f['data'] = powder / counts
         f['counts'] = counts
 

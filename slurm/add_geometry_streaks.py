@@ -31,6 +31,12 @@ def get_args():
     )
 
     parser.add_argument(
+        '--fnam',
+        type=str,
+        help='file name of streak file'
+    )
+
+    parser.add_argument(
         '--output_dir',
         type=Path,
         default=f'{constants.work}/streaks',
@@ -86,7 +92,10 @@ def apply_geom_streaks(streaks):
 if __name__ == '__main__':
     args = get_args()
 
-    fnam_in = args.output_dir / f'streaks_run{args.run:>04}.h5'
+    if args.fnam is None:
+        fnam_in = args.output_dir / f'streaks_run{args.run:>04}.h5'
+    else:
+        fnam_in = args.fnam 
     print(f'loading streak information from: {fnam_in}')
 
     with h5py.File(fnam_in) as f:

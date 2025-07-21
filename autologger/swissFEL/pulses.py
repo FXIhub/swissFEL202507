@@ -16,5 +16,5 @@ class Pulses():
                 pulses = np.max(pids) - np.min(pids)
                 read = np.sum(np.diff(pids, axis=1))
                 dead = pulses - read
-                row[self.heading] = f'{pulses} {read} {dead}'
+                row[self.heading] = read
 

@@ -19,6 +19,6 @@ class Transmission():
                         ):
                     t1 = srow['att_usd.readback']
                     t2 = srow['att._transmission_fund']
-                    row[self.heading] = f'{t1 * t2:.2e}'
+                    row[self.heading] = t1 * t2  # f'{t1 * t2:.2e}'
 
 

@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # get number of files in run
 echo argument = $1
 run=$(printf %04d $1)

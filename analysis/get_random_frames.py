@@ -12,6 +12,22 @@ run = int(sys.argv[1])
 
 
 # find pattern with a lot of streaks
+# check that input dir exists
+run_dir = Path(f'{constants.raw}/run{run:>04}/data')
+assert(run_dir.is_dir())
+
+# get file list
+fnams = sorted(list(run_dir.glob('acq*.JF07T32V02.h5')))
+
+fnam = fnams[0]
+with h5py.File(fnam) as f:
+    data = f['/data/JF07T32V02/data']
+
+    D = data.shape[0]
+    for d in tqdm(range(D)):
+        a = data[d]
+
+"""
 fnam = Path(constants.beamtime_dir) / f'work/streaks/streaks_run{run:>04}.h5'
 if fnam.is_file():
     with h5py.File(fnam) as f:
@@ -50,8 +66,6 @@ for fnam, index in tqdm(zip(fnams_i, index_i)):
 
     frames_out.append(frame_im)
 
-np.save(f'frames_{run}.npy', np.array(frames_out))
-
-
-
-
+out = np.array(frames_out).astype(np.float32)
+np.save(f'frames_{run}.npy', out)
+"""
